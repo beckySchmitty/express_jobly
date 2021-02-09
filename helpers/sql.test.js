@@ -1,35 +1,31 @@
-"use strict";
+const { sqlForPartialUpdate } = require("./sql");
 
-const db = require("../db.js");
-const { BadRequestError, NotFoundError } = require("../expressError");
-const Company = require("./company.js");
-const sqlForPartialUpdate = require("./sql.js")
-const {
-  commonBeforeAll,
-  commonBeforeEach,
-  commonAfterEach,
-  commonAfterAll,
-} = require("./_testCommon");
 
-beforeAll(commonBeforeAll);
-beforeEach(commonBeforeEach);
-afterEach(commonAfterEach);
-afterAll(commonAfterAll);
-
-// *************************************************** 
-
-describe("Input variables to output varibles works", function () {
-    test("dataToUpdate sucessfully returns correct values", function () {
-
+describe("sqlForPartialUpdate", function () {
+  test("works: 1 item", function () {
+    const result = sqlForPartialUpdate(
+        { f1: "v1" },
+        { f1: "f1", fF2: "f2" });
+    expect(result).toEqual({
+      setCols: "\"f1\"=$1",
+      values: ["v1"],
     });
+  });
 
-    test("jsToSql sucessfully returns correct setCols", function () {
-
+  test("works: 2 items", function () {
+    const result = sqlForPartialUpdate(
+        { f1: "v1", jsF2: "v2" },
+        { jsF2: "f2" });
+    expect(result).toEqual({
+      setCols: "\"f1\"=$1, \"f2\"=$2",
+      values: ["v1", "v2"],
     });
+  });
 
-
+  test("throws err if no dataToUpdate", function () {
+    const result = sqlForPartialUpdate(
+      {},
+        { onlyJS: "val" });
+    expect(result).toThrowError(BadRequestError)
+  });
 });
-
-// describe - errors thrown when needed
-// test - dataToUpdate empty throws error
-// test - test incorrect col name w/ query to company??
