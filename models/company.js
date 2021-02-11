@@ -44,43 +44,52 @@ class Company {
     return company;
   }
 
-  /** Find all companies.
-   *  
-    *  Can filter on provided search filters:
-    -  minEmployees
-    -  maxEmployees
-    -  nameLike (will find case-insensitive, partial matches)
-   * */
-  static async findAllFiltered(queryObj) {
-    let {name, minEmployees, maxEmployees} = queryObj;
 
-    if (minEmployees || !)
+  static async findAll(queryObj = {}) {
 
-    const companiesRes = await db.query(
-          `SELECT handle,
-                  name,
-                  description,
-                  num_employees AS "numEmployees",
-                  logo_url AS "logoUrl"
-           FROM companies
-           WHERE name = $1
-           ORDER BY name`, [name]);
+    // base query to be called
+    let query = `SELECT handle,
+                        name,
+                        description,
+                        num_employees AS "numEmployees",
+                        logo_url AS "logoUrl"
+                 FROM companies`;
+    let whereExpressions = [];
+    let queryVals = [];
+
+    const { minEmployees, maxEmployees, name } = queryObj;
+
+    if (minEmployees > maxEmployees) {
+      throw new BadRequestError("Min employees cannot be greater than max");
+    }
+
+    // Add to whereExpressions and queryVals per the filters from the route query string
+
+    if (minEmployees !== undefined) {
+      queryVals.push(minEmployees);
+      whereExpressions.push(`num_employees >= $${queryVals.length}`);
+    }
+
+    if (maxEmployees !== undefined) {
+      queryVals.push(maxEmployees);
+      whereExpressions.push(`num_employees <= $${queryVals.length}`);
+    }
+
+    if (name) {
+      queryVals.push(`%${name}%`);
+      whereExpressions.push(`name ILIKE $${queryVals.length}`);
+    }
+
+    if (whereExpressions.length > 0) {
+      query += " WHERE " + whereExpressions.join(" AND ");
+    }
+
+    // Finalize query and return results
+
+    query += " ORDER BY name";
+    const companiesRes = await db.query(query, queryVals);
     return companiesRes.rows;
-
   }
-
-  static async findAll() {
-    const companiesRes = await db.query(
-          `SELECT handle,
-                  name,
-                  description,
-                  num_employees AS "numEmployees",
-                  logo_url AS "logoUrl"
-           FROM companies
-           ORDER BY name`);
-    return companiesRes.rows;
-  }
-
 
   /** Given a company handle, return data about company.
    *
