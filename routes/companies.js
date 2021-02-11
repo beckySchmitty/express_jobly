@@ -50,13 +50,10 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  * Authorization required: none
  */
 
-//  Need to update and allow  API users to filter the results based on optional 
-// filtering criteria, any or all of which can be passed in the query string:
 
 router.get("/", async function (req, res, next) {
   try {
-    const companies = await Company.findAll();
-    // update Company to have filter method for string query's and add line here
+    const companies = await Company.findAll(req.query);
     return res.json({ companies });
   } catch (err) {
     return next(err);
