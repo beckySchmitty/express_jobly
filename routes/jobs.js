@@ -3,14 +3,15 @@
 /** Routes for jobs. */
 
 const express = require("express");
-const { BadRequestError, ExpressError } = require("../expressError");
+
+const { BadRequestError } = require("../expressError");
 const { ensureAdmin } = require("../middleware/auth");
 const Job = require("../models/job");
-
-const jsonschema = require("jsonschema")
-const jobUpdateSchema = requrie("../schemas/jobUpdate.json")
-const jobSearchSchema = require("../schemas/jobSearch.json")
+const jsonschema = require("jsonschema");
+const jobUpdateSchema = require("../schemas/jobUpdate.json");
+const jobSearchSchema = require("../schemas/jobSearch.json");
 const jobNewSchema = require("../schemas/jobNew.json")
+
 const router = express.Router();
 
 /** GET / =>
@@ -28,17 +29,16 @@ router.get("/", async function (req, res, next) {
     const q = req.query;
     // arrive as strings from querystring, but we want as int/bool
     if (q.minSalary !== undefined) q.minSalary = +q.minSalary;
-    q.hasEquity = q.hasEquity === "true";
+    q.hasEquity = q.hasEquity === "true";  
 
-    // check to make sure q has correct values for querying
-    const validQCheck = jsonschema.validate(q, jobSearchSchema);
-    if (!validQCheck.valid) {
-        let listOfErrors = validQCheck.errors.map(error => error.stack);
-        let error = new ExpressError(listOfErrors, 400);
-        return next(err)
-    }
-    // call
     try {
+    // check to make sure q has correct values for querying
+    const validator = jsonschema.validate(q, jobSearchSchema);
+    if (!validator.valid) {
+        const errs = validator.errors.map(e => e.stack);
+        throw new BadRequestError(errs);
+    }
+
       const jobs = await Job.findAll(q);
       return res.json({ jobs });
     } catch (err) {
@@ -46,22 +46,67 @@ router.get("/", async function (req, res, next) {
     }
   });
 
-  router.patch("/:id", async function (req, res, next) {
-    const q = req.query;
-    // arrive as strings from querystring, but we want as int/bool
-    if (q.minSalary !== undefined) q.minSalary = +q.minSalary;
-    q.hasEquity = q.hasEquity === "true";
+/** GET /[jobId] => { job }
+ *
+ * Returns { id, title, salary, equity, company }
+ *   where company is { handle, name, description, numEmployees, logoUrl }
+ *
+ * Authorization required: none
+ */
 
-    // check to make sure q has correct values for querying
-    const validQCheck = jsonschema.validate(q, jobUpdateSchema);
-    if (!validQCheck.valid) {
-        let listOfErrors = validQCheck.errors.map(error => error.stack);
-        let err = new ExpressError(listOfErrors, 400);
-        return next(err)
-    }
-    // call
+router.get("/:id", async function (req, res, next) {
     try {
-      const jobs = await Job.update(q);
+      const job = await Job.get(req.params.id);
+      return res.json({ job });
+    } catch (err) {
+      return next(err);
+    }
+  });
+  
+
+ /** POST / { job } => { job }
+ *
+ * job should be { title, salary, equity, companyHandle }
+ *
+ * Returns { id, title, salary, equity, companyHandle }
+ *
+ * Authorization required: admin
+ */
+
+router.post("/", ensureAdmin, async function (req, res, next) {
+    try {
+      const validator = jsonschema.validate(req.body, jobNewSchema);
+      if (!validator.valid) {
+        const errs = validator.errors.map(e => e.stack);
+        throw new BadRequestError(errs);
+      }
+  
+      const job = await Job.create(req.body);
+      return res.status(201).json({ job });
+    } catch (err) {
+      return next(err);
+    }
+  });
+
+
+  /** PATCH /[jobId]  { fld1, fld2, ... } => { job }
+ *
+ * Data can include: { title, salary, equity }
+ *
+ * Returns { id, title, salary, equity, companyHandle }
+ *
+ * Authorization required: admin
+ */
+  router.patch("/:id", ensureAdmin, async function (req, res, next) {
+    try {
+
+    const validator = jsonschema.validate(req.body, jobUpdateSchema);
+    if (!validator.valid) {
+      const errs = validator.errors.map(e => e.stack);
+      throw new BadRequestError(errs);
+    }
+
+      const jobs = await Job.update(req.params.id, req.body);
       return res.json({ jobs });
     } catch (err) {
       return next(err);

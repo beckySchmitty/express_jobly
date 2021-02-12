@@ -31,7 +31,6 @@
             "minimum": 1,
             "title": "The minSalary schema",
             "description": "An explanation about the purpose of this instance.",
-            "default": 0,
             "examples": [
                 99000
             ]
