@@ -1,7 +1,7 @@
 "use strict";
 
 const db = require("../db");
-const { BadRequestError, NotFoundError } = require("../expressError");
+const {NotFoundError } = require("../expressError");
 const { sqlForPartialUpdate } = require("../helpers/sql");
 
 /** Related functions for jobs. */
@@ -84,7 +84,7 @@ class Job {
   
       // Finalize query and return results
       query += " ORDER BY title";
-      const jobs = await db.query(query, queryValues);
+      const jobs = await db.query(query, queryVals);
       return jobs.rows;
 
   }
@@ -179,8 +179,7 @@ class Job {
       return undefined;
     }
 
-
 }
 
 
-module.exports = Company;
+module.exports = Job;

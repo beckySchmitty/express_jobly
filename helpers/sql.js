@@ -1,7 +1,7 @@
 const { BadRequestError } = require("../expressError");
 
 // Helper for making selective update queries. 
-// @returns {Object} {sqlSetCols, dataToUpdate}
+// @returns {Object} {sqlSetCols, values}
 // The calling function can use it to make the SET clause of an SQL UPDATE statement.
  
 // @param dataToUpdate {Object} {field1: val, field2: val, ...}
