@@ -7,6 +7,7 @@ const {
   NotFoundError,
   BadRequestError,
   UnauthorizedError,
+  ExpressError
 } = require("../expressError");
 
 const { BCRYPT_WORK_FACTOR } = require("../config.js");
@@ -190,8 +191,34 @@ class User {
     return user;
   }
 
-  /** Delete given user from database; returns undefined. */
+  static async applytoJob(username, jobId) {
+    const JobIdCheck= await db.query(
+      `SELECT id
+       FROM jobs
+       WHERE id = $1`, [jobId]);
 
+    const job = JobIdCheck.rows[0];
+    if (!job) throw new NotFoundError(`No job: ${jobId}`);
+
+    const usernameCheck = await db.query(
+        `SELECT username
+        FROM users
+        WHERE username = $1`, [username]);
+    const user = usernameCheck.rows[0];
+
+    if (!user) throw new NotFoundError(`No username: ${username}`);
+
+    let resp = await db.query(`INSERT INTO applications (username, job_id)
+    VALUES ($1, $2)
+    RETURNING username, jobId `, [username, jobId])
+
+    if (!resp.rows[0]) {
+      throw new ExpressError('Database error', 404)
+    }
+
+  }
+
+  /** Delete given user from database; returns undefined. */
   static async remove(username) {
     let result = await db.query(
           `DELETE
@@ -204,7 +231,10 @@ class User {
 
     if (!user) throw new NotFoundError(`No user: ${username}`);
   }
+
 }
+
+
 
 
 module.exports = User;
