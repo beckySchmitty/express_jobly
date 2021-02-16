@@ -125,7 +125,7 @@ class User {
    **/
 
   static async get(username) {
-    const userRes = await db.query(
+    const userResp = await db.query(
           `SELECT username,
                   first_name AS "firstName",
                   last_name AS "lastName",
@@ -136,9 +136,19 @@ class User {
         [username],
     );
 
-    const user = userRes.rows[0];
-
+    const user = userResp.rows[0];
     if (!user) throw new NotFoundError(`No user: ${username}`);
+
+
+    const jobResp = await db.query(
+    `SELECT a.job_id
+    FROM applications AS a
+    WHERE a.username = $1`, [username])
+    console.log(`*********************${JSON.stringify(jobResp)}`)
+
+    const jobs = jobResp.rows[0];
+
+    user.jobs = jobs;
 
     return user;
   }
