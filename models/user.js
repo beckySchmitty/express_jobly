@@ -141,9 +141,9 @@ class User {
 
 
     const jobResp = await db.query(
-    `SELECT a.job_id
-    FROM applications AS a
-    WHERE a.username = $1`, [username])
+    `SELECT job_id
+    FROM applications
+    WHERE username = $1`, [username])
     console.log(`*********************${JSON.stringify(jobResp)}`)
 
     const jobs = jobResp.rows[0];
