@@ -53,6 +53,7 @@ router.post("/", ensureLoggedIn, ensureAdmin, async function (req, res, next) {
 
 router.get("/", ensureLoggedIn, async function (req, res, next) {
   try {
+    debugger;
     const users = await User.findAll();
     return res.json({ users });
   } catch (err) {
@@ -65,7 +66,7 @@ router.get("/", ensureLoggedIn, async function (req, res, next) {
  *
  * Returns { username, firstName, lastName, isAdmin }
  *
- * Authorization required: Correct user or Admin
+ * Authorization required: Login & Correct user or Admin
  **/
 
 router.get("/:username", ensureLoggedIn, ensureCorrectUserOrAdmin, async function (req, res, next) {
@@ -77,8 +78,13 @@ router.get("/:username", ensureLoggedIn, ensureCorrectUserOrAdmin, async functio
   }
 });
 
+// POST /[username]/jobs/[id] = > { applied: jobId }
 
-router.get("/:username/jobs/:id", ensureLoggedIn, ensureCorrectUserOrAdmin, async function (req, res, next) {
+// Allows a user to apply to a job
+
+// Authroization required: login & correct user or admin
+
+router.post("/:username/jobs/:id", ensureLoggedIn, ensureCorrectUserOrAdmin, async function (req, res, next) {
   try {
     const jobId = +req.params.id;
     await User.applyToJob(req.params.username, jobId);

@@ -191,7 +191,7 @@ class User {
     return user;
   }
 
-  static async applytoJob(username, jobId) {
+  static async applyToJob(username, jobId) {
     const JobIdCheck= await db.query(
       `SELECT id
        FROM jobs
@@ -206,7 +206,7 @@ class User {
         WHERE username = $1`, [username]);
     const user = usernameCheck.rows[0];
 
-    if (!user) throw new NotFoundError(`No username: ${username}`);
+    if (!user) throw new NotFoundError(`No username: ${username}`, 404);
 
     let resp = await db.query(`INSERT INTO applications (username, job_id)
     VALUES ($1, $2)
