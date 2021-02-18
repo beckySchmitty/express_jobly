@@ -2,14 +2,15 @@
 
 /** Routes for authentication. */
 
-const jsonschema = require("jsonschema");
-
 const User = require("../models/user");
 const express = require("express");
 const router = new express.Router();
 const { createToken } = require("../helpers/tokens");
+const jsonschema = require("jsonschema");
+
 const userAuthSchema = require("../schemas/userAuth.json");
 const userRegisterSchema = require("../schemas/userRegister.json");
+
 const { BadRequestError } = require("../expressError");
 
 /** POST /auth/token:  { username, password } => { token }
@@ -21,17 +22,25 @@ const { BadRequestError } = require("../expressError");
 
 router.post("/token", async function (req, res, next) {
   try {
+    console.log(`********************************${JSON.stringify(req.body)}`)
+
     const validator = jsonschema.validate(req.body, userAuthSchema);
+    console.log(`************VAAAAAAAAAAAAAAA********************${validator.valid}`)
+
     if (!validator.valid) {
       const errs = validator.errors.map(e => e.stack);
       throw new BadRequestError(errs);
     }
 
+
     const { username, password } = req.body;
+
     const user = await User.authenticate(username, password);
     const token = createToken(user);
     return res.json({ token });
   } catch (err) {
+    console.log(`99999999999999999999999999999999999999999${err}`)
+
     return next(err);
   }
 });

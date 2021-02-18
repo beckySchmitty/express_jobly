@@ -19,16 +19,17 @@ afterAll(commonAfterAll);
 /************************************** POST /auth/token */
 
 describe("POST /auth/token", function () {
-  test("works", async function () {
+  test("works with correct input", async function () {
     const resp = await request(app)
         .post("/auth/token")
         .send({
           username: "u1",
           password: "password1",
         });
-    expect(resp.body).toEqual({
-      "token": expect.any(String),
-    });
+    // expect(resp.body).toEqual({
+    //   "token": expect.any(String)
+    // });
+        expect(resp.body).toEqual("hello");
   });
 
   test("unauth with non-existent user", async function () {
