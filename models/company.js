@@ -8,11 +8,8 @@ const { sqlForPartialUpdate } = require("../helpers/sql");
 
 class Company {
   /** Create a company (from data), update db, return new company data.
-   *
    * data should be { handle, name, description, numEmployees, logoUrl }
-   *
    * Returns { handle, name, description, numEmployees, logoUrl }
-   *
    * Throws BadRequestError if company already in database.
    * */
 
@@ -43,7 +40,6 @@ class Company {
 
     return company;
   }
-
 
   static async findAll(queryObj = {}) {
 
@@ -110,6 +106,10 @@ class Company {
            WHERE handle = $1`,
         [handle]);
 
+  const company = companyResp.rows[0];
+  if (!company) throw new NotFoundError(`No company: ${handle}`);
+
+
     const jobsResp = await db.query(
           `SELECT id, title, salary, equity
            FROM jobs
@@ -118,13 +118,7 @@ class Company {
         [handle],
     );
 
-    const company = companyResp.rows[0];
-
-    if (!company) throw new NotFoundError(`No company: ${handle}`);
-
     company.jobs = jobsResp.rows;
-
-
     return company;
   }
 
@@ -132,9 +126,7 @@ class Company {
    *
    * This is a "partial update" --- it's fine if data doesn't contain all the
    * fields; this only changes provided ones.
-   *
    * Data can include: {name, description, numEmployees, logoUrl}
-   *
    * Returns {handle, name, description, numEmployees, logoUrl}
    *
    * Throws NotFoundError if not found.
