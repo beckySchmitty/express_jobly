@@ -337,10 +337,11 @@ describe("DELETE /users/:username", function () {
     expect(resp.statusCode).toEqual(401);
   });
 
-  test("not found if user missing", async function () {
+  test("**********not found if user missing", async function () {
     const resp = await request(app)
         .delete(`/users/nope`)
-        .set("authorization", `Bearer ${u1Token}`);
+        .set("authorization", `Bearer ${adminToken}`);
+    expect(resp.error.message).toEqual("Not Found");
     expect(resp.statusCode).toEqual(404);
   });
 });
