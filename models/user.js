@@ -23,7 +23,7 @@ class User {
    **/
 
   static async authenticate(username, password) {
-    // try to find the user first
+    // find user 
     const result = await db.query(
           `SELECT username,
                   password,

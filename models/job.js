@@ -28,7 +28,7 @@ class Job {
             data.title, 
             data.salary, 
             data.equity, 
-            data.company_handle
+            data.companyHandle
         ],
     );
     const job = result.rows[0];
@@ -44,7 +44,7 @@ class Job {
 
 // Returns [{ id, title, salary, equity, companyHandle, companyName }, ...]
 
-  static async findAll(queryObj) {
+  static async findAll({title, minSalary, hasEquity} = {}) {
 
     // base query to be called
     let query = `SELECT j.id,
@@ -61,7 +61,7 @@ class Job {
     // For each possible search term, add to whereExpressions and
     // queryValues so we can generate the right SQL
 
-    let {title, minSalary, hasEquity} = queryObj;
+    // let {title, minSalary, hasEquity} = queryObj;
 
     if (title !== undefined) {
         queryVals.push(`%${title}%`);
@@ -74,7 +74,6 @@ class Job {
     }
 
     if (hasEquity) {
-        queryVals.push(hasEquity);
         whereExpressions.push(`equity > 0`);
     }
 
@@ -86,7 +85,6 @@ class Job {
       query += " ORDER BY title";
       const jobs = await db.query(query, queryVals);
       return jobs.rows;
-
   }
   
 
@@ -148,7 +146,6 @@ class Job {
     const querySQL =`UPDATE jobs
     SET ${setCols}
     WHERE id = ${idIdx}
-    VALUES
     RETURNING id, 
     title, 
     salary, 
