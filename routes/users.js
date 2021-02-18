@@ -5,7 +5,7 @@
 const jsonschema = require("jsonschema");
 
 const express = require("express");
-const { ensureLoggedIn, ensureAdmin, ensureCorrectUserOrAdmin } = require("../middleware/auth");
+const { ensureAdmin, ensureCorrectUserOrAdmin } = require("../middleware/auth");
 const { BadRequestError } = require("../expressError");
 const User = require("../models/user");
 const { createToken } = require("../helpers/tokens");
@@ -27,7 +27,7 @@ const router = express.Router();
  * Authorization required: login & admin
  **/
 
-router.post("/", ensureLoggedIn, ensureAdmin, async function (req, res, next) {
+router.post("/", ensureAdmin, async function (req, res, next) {
   try {
     const validator = jsonschema.validate(req.body, userNewSchema);
     if (!validator.valid) {
@@ -50,7 +50,7 @@ router.post("/", ensureLoggedIn, ensureAdmin, async function (req, res, next) {
  *
  * Authorization required: login
  **/
-router.get("/", ensureLoggedIn, async function (req, res, next) {
+router.get("/", ensureAdmin, async function (req, res, next) {
   try {
     debugger;
     const users = await User.findAll();
@@ -68,7 +68,7 @@ router.get("/", ensureLoggedIn, async function (req, res, next) {
  * Authorization required: Login & Correct user or Admin
  **/
 
-router.get("/:username", ensureLoggedIn, ensureCorrectUserOrAdmin, async function (req, res, next) {
+router.get("/:username", ensureCorrectUserOrAdmin, async function (req, res, next) {
   try {
     const user = await User.get(req.params.username);
     return res.json({ user });
@@ -81,9 +81,9 @@ router.get("/:username", ensureLoggedIn, ensureCorrectUserOrAdmin, async functio
 
 // Allows a user to apply to a job
 
-// Authroization required: login & correct user or admin
+// Authroization required: login Correct user or admin
 
-router.post("/:username/jobs/:id", ensureLoggedIn, ensureCorrectUserOrAdmin, async function (req, res, next) {
+router.post("/:username/jobs/:id", ensureCorrectUserOrAdmin, async function (req, res, next) {
   try {
     const jobId = +req.params.id;
     // user method applyToJob checks username, jobId & saves to db
@@ -105,7 +105,7 @@ router.post("/:username/jobs/:id", ensureLoggedIn, ensureCorrectUserOrAdmin, asy
  * Authorization required: Correct user or Admin
  **/
 
-router.patch("/:username", ensureLoggedIn, ensureCorrectUserOrAdmin,  async function (req, res, next) {
+router.patch("/:username", ensureCorrectUserOrAdmin,  async function (req, res, next) {
   try {
     const validator = jsonschema.validate(req.body, userUpdateSchema);
     if (!validator.valid) {
@@ -126,7 +126,7 @@ router.patch("/:username", ensureLoggedIn, ensureCorrectUserOrAdmin,  async func
  * Authorization required: Correct user or Admin
  **/
 
-router.delete("/:username", ensureLoggedIn, ensureCorrectUserOrAdmin, async function (req, res, next) {
+router.delete("/:username", ensureCorrectUserOrAdmin, async function (req, res, next) {
   try {
     await User.remove(req.params.username);
     return res.json({ deleted: req.params.username });

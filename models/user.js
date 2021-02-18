@@ -208,7 +208,7 @@ class User {
        WHERE id = $1`, [jobId]);
 
     const job = JobIdCheck.rows[0];
-    if (!job) throw new NotFoundError(`No job: ${jobId}`);
+    if (!job) throw new NotFoundError(`No **************************job: ${jobId}`);
 
     // ensure username is valid or throw error
     const usernameCheck = await db.query(
@@ -222,7 +222,7 @@ class User {
     // Update database to show username applied to jobId (applicaitons table)
     let resp = await db.query(`INSERT INTO applications (username, job_id)
     VALUES ($1, $2)
-    RETURNING username, jobId `, [username, jobId])
+    RETURNING username, job_id `, [username, jobId])
 
     if (!resp.rows[0]) {
       throw new ExpressError('Database error', 404)
