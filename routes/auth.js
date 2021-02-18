@@ -22,10 +22,10 @@ const { BadRequestError } = require("../expressError");
 
 router.post("/token", async function (req, res, next) {
   try {
-    console.log(`********************************${JSON.stringify(req.body)}`)
+    console.log(`****************************REQBODY****${JSON.stringify(req.body)}`)
 
     const validator = jsonschema.validate(req.body, userAuthSchema);
-    console.log(`************VAAAAAAAAAAAAAAA********************${validator.valid}`)
+    console.log(`************VAAAAAALIDATER*${validator.valid}`)
 
     if (!validator.valid) {
       const errs = validator.errors.map(e => e.stack);
@@ -39,8 +39,7 @@ router.post("/token", async function (req, res, next) {
     const token = createToken(user);
     return res.json({ token });
   } catch (err) {
-    console.log(`99999999999999999999999999999999999999999${err}`)
-
+    console.log(`****************************ERR IN CATCH${err}`)
     return next(err);
   }
 });
