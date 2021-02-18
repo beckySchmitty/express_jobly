@@ -67,6 +67,7 @@ router.get("/", ensureLoggedIn, async function (req, res, next) {
  *
  * Authorization required: Login & Correct user or Admin
  **/
+
 router.get("/:username", ensureLoggedIn, ensureCorrectUserOrAdmin, async function (req, res, next) {
   try {
     const user = await User.get(req.params.username);
@@ -85,6 +86,7 @@ router.get("/:username", ensureLoggedIn, ensureCorrectUserOrAdmin, async functio
 router.post("/:username/jobs/:id", ensureLoggedIn, ensureCorrectUserOrAdmin, async function (req, res, next) {
   try {
     const jobId = +req.params.id;
+    // user method applyToJob checks username, jobId & saves to db
     await User.applyToJob(req.params.username, jobId);
     return res.json({ applied: jobId });
   } catch (err) {

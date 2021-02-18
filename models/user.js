@@ -119,7 +119,8 @@ class User {
   /** Given a username, return data about user.
    *
    * Returns { username, first_name, last_name, is_admin, jobs }
-   *   where jobs is { id, title, company_handle, company_name, state }
+   *   where jobs is [ jobId, jobId, ... ]
+
    *
    * Throws NotFoundError if user not found.
    **/
@@ -144,11 +145,8 @@ class User {
     `SELECT job_id
     FROM applications
     WHERE username = $1`, [username])
-    console.log(`*********************${JSON.stringify(jobResp)}`)
 
-    const jobs = jobResp.rows[0];
-
-    user.jobs = jobs;
+    user.jobs = jobResp.rows.map(j => j.job_id);
 
     return user;
   }
@@ -202,6 +200,8 @@ class User {
   }
 
   static async applyToJob(username, jobId) {
+
+    // ensure jobId is valid or throw error
     const JobIdCheck= await db.query(
       `SELECT id
        FROM jobs
@@ -210,6 +210,7 @@ class User {
     const job = JobIdCheck.rows[0];
     if (!job) throw new NotFoundError(`No job: ${jobId}`);
 
+    // ensure username is valid or throw error
     const usernameCheck = await db.query(
         `SELECT username
         FROM users
@@ -218,6 +219,7 @@ class User {
 
     if (!user) throw new NotFoundError(`No username: ${username}`, 404);
 
+    // Update database to show username applied to jobId (applicaitons table)
     let resp = await db.query(`INSERT INTO applications (username, job_id)
     VALUES ($1, $2)
     RETURNING username, jobId `, [username, jobId])
@@ -225,6 +227,9 @@ class User {
     if (!resp.rows[0]) {
       throw new ExpressError('Database error', 404)
     }
+
+    // no return 
+    // If no errors here, the route will return object saying they applied
 
   }
 
